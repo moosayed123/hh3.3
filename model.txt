@@ -1,0 +1,93 @@
+import pandas as pd  
+import numpy as np
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler, LabelEncoder  
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+import joblib
+
+
+df = pd.read_csv(r"C:\Users\J0222025\Downloads\charn-20240925T051015Z-001\charn\churn\WA_Fn-UseC_-Telco-Customer-Churn.csv")
+df
+
+
+label_encode_cols = ["Partner", "Dependents", "PhoneService", "PaperlessBilling"]
+one_hot_encode_cols = ["MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup",
+                       "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+                       "Contract", "PaymentMethod"]
+min_max_scale_cols = ["tenure", "MonthlyCharges", "TotalCharges"]
+
+
+X = df.drop(columns=['customerID', 'Churn'])
+y = df['Churn']
+
+le_target = LabelEncoder()
+y = le_target.fit_transform(y)
+
+
+joblib.dump(le_target, r'C:\Users\J0222025\Downloads\charn-20240925T051015Z-001\charn\churn\label_encoder_target.pkl')
+print(" saved.")
+
+
+
+X[min_max_scale_cols] = X[min_max_scale_cols].replace(' ', np.nan).astype(float)
+X[min_max_scale_cols] = X[min_max_scale_cols].fillna(X[min_max_scale_cols].mean()
+
+
+label_encoders = {}
+for col in label_encode_cols + ["gender"]:
+    le = LabelEncoder()
+    X[col] = le.fit_transform(X[col])
+    label_encoders[col] = l
+
+
+joblib.dump(label_encoders, r'C:\Users\J0222025\Downloads\charn-20240925T051015Z-001\charn\churn\label_encoders.pkl')
+print(" saved.")
+
+
+one_hot_encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+one_hot_encoded = one_hot_encoder.fit_transform(X[one_hot_encode_cols])
+
+
+joblib.dump(one_hot_encoder, r'C:\Users\J0222025\Downloads\charn-20240925T051015Z-001\charn\churn\one_hot_encoder.pkl')
+print("saved.")
+
+
+
+min_max_scaler = MinMaxScaler()
+scaled_numerical = min_max_scaler.fit_transform(X[min_max_scale_cols])
+
+
+
+joblib.dump(min_max_scaler, r'C:\Users\J0222025\Downloads\charn-20240925T051015Z-001\charn\churn\min_max_scaler.pkl')
+print(" saved.")
+
+
+
+X_processed = np.hstack((X[label_encode_cols + ["gender"]].values, scaled_numerical, one_hot_encoded))
+
+X_processed 
+
+
+
+X_train, X_test, y_train, y_test = train_test_split(X_processed, y, test_size=0.2, random_state=42)
+
+
+
+model = LogisticRegression(max_iter=1000, random_state=42)
+model.fit(X_train, y_train)
+
+
+
+
+model_file = r'C:\Users\J0222025\Downloads\charn-20240925T051015Z-001\charn\churn\logistic_regression_model.pkl'
+joblib.dump(model, model_file)
+print(f"model saved as {model_file}.")
+
+
+
+
+
+
+
+
+
